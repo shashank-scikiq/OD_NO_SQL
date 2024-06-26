@@ -360,3 +360,4 @@ else 1
 end as "comp-subkey"
 from
 final_table
+
