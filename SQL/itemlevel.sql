@@ -276,6 +276,14 @@ when trim(lower("order status")) = 'cancelled' then 'Cancelled'
 else 'In Process'
 end as "order status",
 qty,
+	ARRAY_JOIN(ARRAY_AGG(distinct "on_confirm_sync_response"
+order by
+	"on_confirm_sync_response"),
+	',') as "on_confirm_response",
+	ARRAY_JOIN(ARRAY_AGG(distinct "on_confirm_error_code"
+order by
+	"on_confirm_error_code"),
+	',') as "on_confirm_error_code",
 min(DATE(SUBSTRING("O_Created Date & Time", 1, 10))) as "Date"
 from
 bottom_layer
@@ -340,6 +348,8 @@ provider_id,
 "Date",
 "Order Category",
 "item category",
+"on_confirm_response",
+"on_confirm_error_code",
 case
 when row_number() over (partition by "Network order id"
 order by
@@ -360,4 +370,4 @@ else 1
 end as "comp-subkey"
 from
 final_table
-
+-- Filter out the orders with on_confirm_response = 'NACK', we don't consider these orders as confirmed orders
