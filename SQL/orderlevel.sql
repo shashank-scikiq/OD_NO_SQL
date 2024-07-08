@@ -452,4 +452,4 @@ select
 	"on_confirm_error_code"
 from
 	table_l
-	-- Filter out the orders with on_confirm_response = 'NACK', we don't consider these orders as confirmed orders
+	-- Filter out the orders with on_confirm_response = 'NACK', we don't consider these orders as confirmed numbers
