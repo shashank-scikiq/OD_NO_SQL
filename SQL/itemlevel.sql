@@ -41,127 +41,112 @@ lower("seller np name") like '%rapidor%'
 order_table as (
 select
 "network order id",
-provider_id,
+"provider_id",
 row_number() over (partition by ("network order id" ||
 (case
-when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%dominos%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%agrevolution%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%enam.gov%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%crofarm%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%rebelfoods%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%uengage%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.kiko.live/ondc-seller'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%snapdeal%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Fashion'
-when "item category" = 'F&B' then 'F&B'
-when "item category" = 'Grocery' then 'Grocery'
-when trim("item category") is not null
-and trim("item consolidated category") is null then 'Others'
-when trim("item category") is null then 'Undefined'
-else trim("item consolidated category")
+	when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%dominos%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "item consolidated category" like 'Agri%'
+	or "domain" like '%AGR%' then 'Agriculture'
+	when "seller np name" like '%agrevolution%' then 'Agriculture'
+	when "seller np name" like '%enam.gov%' then 'Agriculture'
+	when "seller np name" like '%crofarm%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "seller np name" like '%rebelfoods%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%uengage%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.kiko.live/ondc-seller'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "item category" = 'F&B' then 'F&B'
+	when "item category" = 'Grocery' then 'Grocery'
+	when "item category" is not null
+	and "item consolidated category" is null then 'Others'
+	when "item category" is null then 'Undefined'
+	else "item consolidated category"
 end))
 order by
 (
 case
-when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%dominos%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%agrevolution%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%enam.gov%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%crofarm%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%rebelfoods%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%uengage%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.kiko.live/ondc-seller'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%snapdeal%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Fashion'
-when "item category" = 'F&B' then 'F&B'
-when "item category" = 'Grocery' then 'Grocery'
-when trim("item category") is not null
-and trim("item consolidated category") is null then 'Others'
-when trim("item category") is null then 'Undefined'
-else trim("item consolidated category")
+	when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%dominos%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "item consolidated category" like 'Agri%'
+	or "domain" like '%AGR%' then 'Agriculture'
+	when "seller np name" like '%agrevolution%' then 'Agriculture'
+	when "seller np name" like '%enam.gov%' then 'Agriculture'
+	when "seller np name" like '%crofarm%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "seller np name" like '%rebelfoods%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%uengage%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.kiko.live/ondc-seller'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "item category" = 'F&B' then 'F&B'
+	when "item category" = 'Grocery' then 'Grocery'
+	when "item category" is not null
+	and "item consolidated category" is null then 'Others'
+	when "item category" is null then 'Undefined'
+	else "item consolidated category"
 end) ) max_record_key,
 case
 when trim("item category") is null then 'Undefined'
 else trim("item category")
 end as "item category",
 case
-when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%dominos%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%agrevolution%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%enam.gov%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%crofarm%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%rebelfoods%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%uengage%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.kiko.live/ondc-seller'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%snapdeal%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Fashion'
-when "item category" = 'F&B' then 'F&B'
-when "item category" = 'Grocery' then 'Grocery'
-when trim("item category") is not null
-and trim("item consolidated category") is null then 'Others'
-when trim("item category") is null then 'Undefined'
-else trim("item consolidated category")
+	when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%dominos%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "item consolidated category" like 'Agri%'
+	or "domain" like '%AGR%' then 'Agriculture'
+	when "seller np name" like '%agrevolution%' then 'Agriculture'
+	when "seller np name" like '%enam.gov%' then 'Agriculture'
+	when "seller np name" like '%crofarm%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "seller np name" like '%rebelfoods%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%uengage%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.kiko.live/ondc-seller'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "item category" = 'F&B' then 'F&B'
+	when "item category" = 'Grocery' then 'Grocery'
+	when "item category" is not null
+	and "item consolidated category" is null then 'Others'
+	when "item category" is null then 'Undefined'
+	else "item consolidated category"
 end as "item consolidated category"
 from
 bottom_layer),
@@ -188,8 +173,6 @@ main_table as (
 select
 "buyer np name" as "Buyer NP",
 "seller np name" as "Seller NP",
-"domain",
-"seller name",
 provider_id,
 case
 when "f_order-picked-up at date & time" = ''
@@ -197,54 +180,52 @@ or "f_order-picked-up at date & time" is null then 0
 else 1
 end as "Shipped at",
 case
-when upper("seller pincode") like '%XXX%' then 'Undefined'
-when upper("seller pincode") like '' then 'Undefined'
-when upper("seller pincode") like '%***%' then 'Undefined'
-when upper("seller pincode") like 'null' then 'Undefined'
-when upper("seller pincode") is null then 'Undefined'
+when "seller pincode" like '%XXX%' then 'Undefined'
+when "seller pincode" like '' then 'Undefined'
+when "seller pincode" like '%***%' then 'Undefined'
+when "seller pincode" like 'null' then 'Undefined'
+when "seller pincode" is null then 'Undefined'
 else "seller pincode"
 end as "Seller Pincode",
 case
-when upper("Delivery Pincode") like '%XXX%' then 'Undefined'
-when upper("Delivery pincode") like '' then 'Undefined'
-when upper("Delivery Pincode") like '%***%' then 'Undefined'
-when upper("Delivery Pincode") is null then 'Undefined'
+when "Delivery Pincode" like '%XXX%' then 'Undefined'
+when "Delivery Pincode" like '' then 'Undefined'
+when "Delivery Pincode" like '%***%' then 'Undefined'
+when "Delivery Pincode" is null then 'Undefined'
 else "Delivery Pincode"
 end as "Delivery Pincode",
 case
-when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%dominos%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%agrevolution%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%enam.gov%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Agriculture'
-when "seller np name" like '%crofarm%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "seller np name" like '%rebelfoods%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" like '%uengage%'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'F&B'
-when "seller np name" = 'api.kiko.live/ondc-seller'
-and trim("item consolidated category") is null
-or "item consolidated category" = '' then 'Grocery'
-when "item category" = 'F&B' then 'F&B'
-when "item category" = 'Grocery' then 'Grocery'
-when trim("item category") is not null
-and trim("item consolidated category") is null then 'Others'
-when trim("item category") is null then 'Undefined'
-else trim("item consolidated category")
+	when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%dominos%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "item consolidated category" like 'Agri%'
+	or "domain" like '%AGR%' then 'Agriculture'
+	when "seller np name" like '%agrevolution%' then 'Agriculture'
+	when "seller np name" like '%enam.gov%' then 'Agriculture'
+	when "seller np name" like '%crofarm%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "seller np name" like '%rebelfoods%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" like '%uengage%'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.esamudaay.com/ondc/sdk/bpp/retail/lespl'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'F&B'
+	when "seller np name" = 'api.kiko.live/ondc-seller'
+	and "item consolidated category" is null
+	or "item consolidated category" = '' then 'Grocery'
+	when "item category" = 'F&B' then 'F&B'
+	when "item category" = 'Grocery' then 'Grocery'
+	when "item category" is not null
+	and "item consolidated category" is null then 'Others'
+	when "item category" is null then 'Undefined'
+	else "item consolidated category"
 end as "item consolidated category",
 case
 when trim("item category") is null
@@ -299,8 +280,7 @@ group by
 9,
 10,
 11,
-12,
-13,14),
+12),
 trial as (
 select
 m.*,
@@ -324,21 +304,12 @@ end as "item category"
 from
 main_table m
 left join order_table1 ot on
-ot."network order id" = m."Network order id"),
-final_table as (
-select
-*,
-("Network order id" || '_' || "Order Category") as "comp-key",
-("Network order id" || '_' || "item category") as "comp-subkey"
-from
-trial)
+ot."network order id" = m."Network order id")
 select
 "Buyer NP",
 "Seller NP",
 "Network order id",
 provider_id,
-"domain",
-"seller name",
 "Shipped at",
 "Seller Pincode",
 "Delivery Pincode",
@@ -355,19 +326,7 @@ when row_number() over (partition by "Network order id"
 order by
 "Date") > 1 then 0
 else 1
-end as "noi_key",
-case
-when row_number() over (partition by "comp-key"
-order by
-"Date") > 1 then 0
-else 1
-end as "comp_key",
-case
-when row_number() over (partition by "comp-subkey"
-order by
-"Date") > 1 then 0
-else 1
-end as "comp-subkey"
+end as "noi_key"
 from
-final_table
+trial
 -- Filter out the orders with on_confirm_response = 'NACK', we don't consider these orders as confirmed orders
