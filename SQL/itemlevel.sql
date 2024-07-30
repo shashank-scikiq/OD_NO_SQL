@@ -1,10 +1,4 @@
-with  early_layer as (
-select *,
-case 
-	when substring("f_order delivered at date & time from fulfillments",1,4) = '0000' then 0
-	else 1 end as "omitter"
-	from "default".shared_order_fulfillment_nhm_fields_view_hudi ), 
-base_table as (select 
+with base_table as (select 
 "network order id",
 case
 	when "seller np name" = 'webapi.magicpin.in/oms_partner/ondc'
@@ -49,11 +43,16 @@ order by
 order by
 	"on_confirm_error_code"),
 	',') as "on_confirm_error_code"
-from early_layer
+from "default".shared_order_fulfillment_nhm_fields_view_hudi
 where
 	date(date_parse("O_Created Date & Time",
 		'%Y-%m-%dT%H:%i:%s')) >= date('2023-11-01')
 	and "network order id" is not null
+	and 
+	(case
+		when SUBSTRING("f_order delivered at date & time from fulfillments", 1, 4) = '0000' then 0
+		else 1
+	end) = 1
 group by 1,2,3)
 select *,
 case
