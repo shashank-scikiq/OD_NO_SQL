@@ -16,35 +16,20 @@ end as "f_cancel_code"
 from
 	"default".shared_order_fulfillment_nhm_fields_view_hudi
 where
-	date(date_parse("O_Created Date & Time",
+     date(date_parse("O_Created Date & Time",
 		'%Y-%m-%dT%H:%i:%s')) >= date('2023-11-01')
 	and "network order id" is not null
-	and "network order id" <> ''
-	and not (
- lower("buyer np name") like '%stg%'
-		or lower("buyer np name") like '%preprod%'
-			or lower("buyer np name") like '%pre-prod%'
-				or lower("buyer np name") like 'buyer-refapp-ops.ondc.org'
-					or lower("buyer np name") like '%staging%'
-						or lower("buyer np name") like '%testing%'
-							or lower("buyer np name") like '%test%' )
-	and not (
-lower("seller np name") like '%rapidor%'
-		or lower("seller np name") like '%staging%'
-			or lower("seller np name") like '%preprod%'
-				or lower("seller np name") like '%pre-prod%'
-					or lower("seller np name") like 'gl-6912-httpapi.glstaging.in/gl/ondc'
-						or lower("seller np name") like '%testing%'
-							or lower("seller np name") like '%test%'
-								or lower("seller np name") like '%ultron%')),	
+	and 
+	(case
+		when SUBSTRING("f_order delivered at date & time from fulfillments", 1, 4) = '0000' then 0
+		else 1
+	end) = 1
+),	
 base_table as (
 select
 	"network order id",
 	"buyer np name",
-	case
-		when "seller np name" like '%kiko%' then 'ondc.kiko.live/ondc-seller'
-		else "seller np name"
-	end as "seller np name",
+	"seller np name",
 	"fulfillment status",
 	case 
 		when "on_confirm_sync_response" is null then 'NULL'
@@ -167,8 +152,10 @@ end as "item consolidated category",
 		'%Y-%m-%dT%H:%i:%s') as "Shipped at",
 		date_parse("f_packed at date & time",
 		'%Y-%m-%dT%H:%i:%s') as "Ready to Ship",
+	coalesce(date_parse("promised_time_to_deliver_from_on_confirm",
+		'%Y-%m-%dT%H:%i:%s'),
 	date_parse("Promised time to deliver Date & Time from on_select",
-		'%Y-%m-%dT%H:%i:%s') as "Promised time",
+		'%Y-%m-%dT%H:%i:%s')) as "Promised time",
 	"Delivery Pincode",
 	date_parse("O_Created Date & Time",
 		'%Y-%m-%dT%H:%i:%s') as "Created at",
@@ -239,8 +226,8 @@ case
 	else null
 end as "cancellation_code",
 			case
-				when (case
-					when trim("order status") = 'Completed' then 'Delivered'
+			when (case
+			when trim("order status") = 'Completed' then 'Delivered'
 			when trim("fulfillment status") like 'RTO%' then 'Cancelled'
 			when trim("order status") like '%Return%' then 'Delivered'
 			when trim("order status") = 'Cancelled' then 'Cancelled'
@@ -261,7 +248,7 @@ end as "cancellation_code",
 			case
 				when upper("seller pincode") like '%XXX%' then 'Undefined'
 		when upper("seller pincode") like '' then 'Undefined'
-		when upper("seller pincode") like '%***%' then 'Undefined'
+		when upper("seller pincode") like '%*%' then 'Undefined'
 		when upper("seller pincode") like 'null' then 'Undefined'
 		when upper("seller pincode") is null then 'Undefined'
 		else "seller pincode"
@@ -269,7 +256,7 @@ end as "cancellation_code",
 			case
 				when upper("Delivery Pincode") like '%XXX%' then 'Undefined'
 		when upper("Delivery pincode") like '' then 'Undefined'
-		when upper("Delivery Pincode") like '%***%' then 'Undefined'
+		when upper("Delivery Pincode") like '%*%' then 'Undefined'
 		when upper("Delivery Pincode") like 'null' then 'Undefined'
 		when upper("Delivery Pincode") is null then 'Undefined'
 		else "Delivery Pincode"
@@ -411,7 +398,7 @@ select
 	"Seller NP",
 	"Network order id",
 	"provider key",
-	coalesce("Provider Id",'No Id') as "Provider Id",
+	"Provider Id",
 	"Seller Name",
 	"Seller Pincode",
 	"Delivery Pincode",
@@ -446,4 +433,3 @@ select
 	"on_confirm_error_code"
 from
 	table_l
-	-- Filter out the orders with on_confirm_response = 'NACK', we don't consider these orders as confirmed numbers
