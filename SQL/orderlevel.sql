@@ -4,14 +4,6 @@ select
 	"buyer np name",
 	"seller np name",
 	"fulfillment status",
-	case 
-		when "on_confirm_sync_response" is null then 'NULL'
-		else "on_confirm_sync_response"
-	end as "on_confirm_sync_response",
-	case 
-		when "on_confirm_error_code" is null then 'NULL'
-		else "on_confirm_error_code"
-	end as "on_confirm_error_code",
 	coalesce(case
 		when "fulfillment status" like '%RTO%'
 		and ("cancellation code" is null
@@ -171,12 +163,13 @@ order by
 		end)
 		else "order status"
 	end as "order status"
-from
-	"default".shared_order_fulfillment_nhm_fields_view_hudi
+from "default".shared_order_fulfillment_nhm_fields_view_hudi
 where
-	date(date_parse("O_Created Date & Time",
-		'%Y-%m-%dT%H:%i:%s')) >= date('2023-11-01')
-	and "network order id" is not null),								
+(case 
+				when upper(on_confirm_sync_response) = 'NACK' then 1
+				when on_confirm_error_code is not null then 1
+			else 0
+			end) = 0),								
 table1 as (
 select
 	"seller np name" as "Seller NP",
@@ -186,8 +179,6 @@ select
 		"Created at",
 		"Shipped at",
 		"Ready to Ship",
-		"on_confirm_sync_response",
-		"on_confirm_error_code",
 		coalesce(case
 		when "item consolidated category" = 'F&B' then "Promised time" + interval '5' minute
 		else "Promised time"
@@ -262,14 +253,6 @@ from
 merger_table as (
 select
 	"Network order id",
-	ARRAY_JOIN(ARRAY_AGG(distinct "on_confirm_sync_response"
-order by
-	"on_confirm_sync_response"),
-	',') as "on_confirm_response",
-	ARRAY_JOIN(ARRAY_AGG(distinct "on_confirm_error_code"
-order by
-	"on_confirm_error_code"),
-	',') as "on_confirm_error_code",
 	ARRAY_JOIN(ARRAY_AGG(distinct "domain"
 order by
 	"domain"),
@@ -306,8 +289,6 @@ select
 	t1."Seller Pincode",
 	t1."Delivery Pincode",
 	t1."max_record_key",
-	mt."on_confirm_response",
-	mt."on_confirm_error_code",
 	mt."domain",
 	mt."ONDC order_status",
 	mt."item consolidated category"
@@ -327,8 +308,6 @@ select
 	"Buyer NP",
 	"Seller NP",
 	"Network order id",
-	"on_confirm_response",
-	"on_confirm_error_code",
 	"domain",
 	"item consolidated category" as "Consolidated_category",
 	case
@@ -391,9 +370,7 @@ select
 		5,
 		6,
 		7,
-		8,
-		9,
-		10)
+		8)
 select
 	"Buyer NP",
 	"Seller NP",
@@ -429,8 +406,6 @@ select
 		else "Created at"
 	end as "Updated at",
 	"Category",
-	"Consolidated_category",
-	"on_confirm_response",
-	"on_confirm_error_code"
+	"Consolidated_category"
 from
 	table_l
