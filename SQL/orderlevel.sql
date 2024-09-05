@@ -188,19 +188,18 @@ select
 		"fulfillment status",
 		"item consolidated category",
 		"network order id" as "Network order id",
-		case
-		when trim("order status") is null then 'In-progress'
-		when trim("order status") = '' then 'In-progress'
-		when trim("order status") like '%**%' then 'In-progress'
-		else trim("order status")
-	end as "Order Status",
-		case
-		when trim(lower("order status")) = 'completed' then 'Delivered'
-		when trim("fulfillment status") like 'RTO%' then 'Cancelled'
-		when trim("order status") like '%Return%' then 'Delivered'
-		when trim(lower("order status")) = 'cancelled' then 'Cancelled'
-		else 'In Process'
-	end as "ONDC order_status",
+	case
+		when "order status" is null
+			or "order status" = '' then 'In Process'
+			when "order status" = 'Cancelled' then 'Cancelled'
+			when "order status" = 'Completed' then 'Delivered'
+			when lower("order status") = 'delivered' then 'Delivered'
+			when "order status" like 'Liquid%' then 'Delivered'
+			when "order status" like '%leted' then 'Delivered'
+			when "order status" like 'Return%' then 'Delivered'
+			when "fulfillment status" like 'RTO%' then 'Cancelled'
+			else 'In Process'
+		end as "ONDC order_status",
 	case
 		when "fulfillment status" like '%RTO%' then coalesce("cancellation_code",
 		'013')
@@ -232,19 +231,19 @@ select
 	end as "Cancelled at",
 			provider_id ,
 			case
-				when upper("seller pincode") like '%XXX%' then 'Undefined'
-		when upper("seller pincode") like '' then 'Undefined'
-		when upper("seller pincode") like '%*%' then 'Undefined'
-		when upper("seller pincode") like 'null' then 'Undefined'
-		when upper("seller pincode") is null then 'Undefined'
+				when "seller pincode" like '%XXX%' then 'Undefined'
+		when "seller pincode" like '' then 'Undefined'
+		when "seller pincode" like '%*%' then 'Undefined'
+		when "seller pincode" like 'null' then 'Undefined'
+		when "seller pincode" is null then 'Undefined'
 		else "seller pincode"
 	end as "Seller Pincode",
 			case
 				when upper("Delivery Pincode") like '%XXX%' then 'Undefined'
-		when upper("Delivery pincode") like '' then 'Undefined'
-		when upper("Delivery Pincode") like '%*%' then 'Undefined'
-		when upper("Delivery Pincode") like 'null' then 'Undefined'
-		when upper("Delivery Pincode") is null then 'Undefined'
+		when "Delivery pincode" like '' then 'Undefined'
+		when "Delivery Pincode" like '%*%' then 'Undefined'
+		when "Delivery Pincode" like 'null' then 'Undefined'
+		when "Delivery Pincode" is null then 'Undefined'
 		else "Delivery Pincode"
 	end as "Delivery Pincode",
 			lower(trim("seller name")) as "seller name"
@@ -281,7 +280,6 @@ select
 	t1."Ready to Ship",
 	t1."Promised time",
 	t1."Date",
-	t1."Order Status",
 	t1."cancellation_code",
 	t1."Completed at",
 	t1."Cancelled at",
