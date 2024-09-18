@@ -293,14 +293,9 @@ select
 from
 	table1 t1
 join merger_table mt on
-	t1."Network order id" = mt."Network order id"),
-last_table as (
-select
-	*
-from
-	trial
+	t1."Network order id" = mt."Network order id"
 where
-	max_record_key = 1),
+	t1."max_record_key" = 1),
 table_l as (
 select
 	"Buyer NP",
@@ -359,7 +354,7 @@ select
 			else 1
 		end as "no_key"
 	from
-		last_table
+		trial
 	group by
 		1,
 		2,
