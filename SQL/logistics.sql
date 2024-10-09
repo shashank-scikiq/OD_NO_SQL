@@ -154,8 +154,8 @@ third_table as (
 				when on_confirm_error_code is null then 0
 				else 1
 			end) = 0
-)
-select
+),
+final_logi_table AS (select
 a.bap_id,
 a.bpp_id,
 a.provider_id,
@@ -297,8 +297,6 @@ case
 	when a.item_tat is null then a.category_tat
 	else a.item_tat
 end as tat,
-a.on_confirm_sync_response,
-a.on_confirm_error_code,
 a.on_confirm_error_message,
 a.rts_tat_duration,
 date_parse(a.rts_tat,'%Y-%m-%dT%H:%i:%s') AS rts_tat,
@@ -316,9 +314,14 @@ WHEN a.f_order_delivered_at_date_from_fulfillment LIKE 'D%' THEN NULL
 WHEN a.f_order_delivered_at_date_from_fulfillment LIKE '000%' THEN NULL 
 ELSE date_parse(a.f_order_delivered_at_date_from_fulfillment,'%Y-%m-%dT%H:%i:%s')
 END as f_order_delivered_at_date_from_fulfillment,
+date_parse(a.f_at_pickup_from_date,'%Y-%m-%dT%H:%i:%s') as f_at_pickup_from_date,
+date_parse(a.f_at_delivery_from_date,'%Y-%m-%dT%H:%i:%s') as f_at_delivery_from_date,
 b."Network order id" as "retail_noi",
 b."Accepted at",
 b.buyer_np
 from
 	third_table a
-LEFT join table2 b ON upper(a.network_retail_order_id) = upper(b."network order id")
+LEFT join table2 b ON upper(a.network_retail_order_id) = upper(b."network order id"))
+SELECT * ,
+ROW_NUMBER () OVER (PARTITION BY network_retail_order_id ORDER BY order_created_at DESC) AS row_num_1
+FROM final_logi_table
