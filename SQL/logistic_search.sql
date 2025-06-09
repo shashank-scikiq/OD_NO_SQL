@@ -1,58 +1,89 @@
+with table1 as (
 select
-	"bap_id",
-	"bpp_id",
-	searched_date,
-	s_fulfillment_type,
-	date("searched_date") as "Date",
-	"network_transaction_id",
-	o_fulfillment_type,
-	"s_category_id",
-	"pick_up_pincode",
-	"delivery_pincode",
-	case
-		when "s_sync_response" is null
-		or "s_sync_response" = '' then 'ACK'
-		else "s_sync_response"
-	end as "s_sync_response",
-	case
-		when s_error is null
-		or s_error = '' then 'ACK'
-		else s_error
-	end as s_error,
-	"on_search_received",
-	"o_category_id",
-	case
-		when bpp_id = 'bpp.ulip.digiit.ai' then 'P2P'
-		when bpp_id  = 'flash-api.shadowfax.in' then 'P2P'
-		when bpp_id  = 'ondc.delhivery.com' then 'P2H2P'
-		when bpp_id  = 'ondc.dunzo.in' then 'P2P'
-		when bpp_id  = 'ondc.ecomexpress.in' then 'P2H2P'
-		when bpp_id  = 'ondc.loadshare.net' then 'P2P'
-		when bpp_id  = 'ondc.pidge.in' then 'P2P'
-		when bpp_id  = 'ondc.qwqer.in' then 'P2P'
-		when bpp_id  = 'ondc.shipyaari.com' then 'P2H2P'
-		when bpp_id  = 'ondc.theporter.in' then 'P2P'
-		when bpp_id  = 'ondc.whizzard.in' then 'P2P'
-		when bpp_id  = 'ondc.xbees.in' then 'P2H2P'
-		when bpp_id  = 'ondc.zypp.app' then 'P2P'
-		when bpp_id  = 'ondc-lsp.olacabs.com' then 'P2P'
-		when bpp_id  = 'prod.ondc.adloggs.com' then 'P2P'
-		when bpp_id  = 'webapi.magicpin.in/oms_partner/ondc/logistics' then 'P2P'
-		when bpp_id  = 'ondc.shiprocket.in' then 'P2H2P'
-		else "shipment_type"
-	end as "shipment_type",
-	"on_search_error"
+	bap_id,
+	bpp_id,
+	date(searched_date) as "date",
+	network_transaction_id,
+	s_category_id,
+	pick_up_pincode,
+	delivery_pincode,
+	s_sync_response,
+	on_search_received ,on_search_error
 from
-	"default".shared_logistics_search_on_search 
-where 
-  date("searched_date") >= now() - interval '10' day 
-  and not(
-    bpp_id like '%preprod%' 
-    or bpp_id like '%dunzo%' 
-    or bpp_id like '%ithink%' 
-    or bpp_id like '%grab%' 
-    or bpp_id = 'api-ondc.dlyb.in' 
-    or bap_id like '%preprod%' 
-    or bap_id like '%test%' 
-    or bap_id like '%pramaan%'
-  )
+	"default".shared_logistics_search_on_search
+where  date(searched_date) >= date(now()) - interval '10' day
+and bpp_id is not null
+and not(regexp_like(bpp_id,
+	'preprod|preprd|stage|staging'))
+	and not(regexp_like(bpp_id,
+	'^(init|search|on_search|ondc-prod.uengage.in|ondcseller-prod.costbo.com|sellerconnect.vikrra.in|api-ondc.dlyb.in|seller.udyamwell.in)$'))
+	and not(regexp_like(bap_id,
+	'preprod|preprd|stage|pramaan|pre.prod|testSeller|staging|testPlan|testtoprod|logistics_buyer|babaElaichiTest'))
+	and not(regexp_like(bap_id,
+	'^(biz.test.bitsila.com|ondc-connect-test.localzoho.com)$'))
+group by 
+	bap_id,
+	bpp_id,
+	date(searched_date),
+	network_transaction_id,
+	s_category_id,
+	pick_up_pincode,
+	delivery_pincode,
+	s_sync_response,
+	on_search_received,
+	on_search_error),
+table2 as (
+select 
+bap_id,network_transaction_id, ARRAY_JOIN(ARRAY_AGG(distinct "on_search_received"
+order by
+	"on_search_received"),
+	',') as review
+from
+	"default".logistics_search_on_search_data_fields
+where  date(searched_date) >= date(now()) - interval '10' day
+and bpp_id is not null
+and not(regexp_like(bpp_id,
+	'preprod|preprd|stage|staging'))
+	and not(regexp_like(bpp_id,
+	'^(init|search|on_search|ondc-prod.uengage.in|ondcseller-prod.costbo.com|sellerconnect.vikrra.in|api-ondc.dlyb.in|seller.udyamwell.in)$'))
+	and not(regexp_like(bap_id,
+	'preprod|preprd|stage|pramaan|pre.prod|testSeller|staging|testPlan|testtoprod|logistics_buyer|babaElaichiTest'))
+	and not(regexp_like(bap_id,
+	'^(biz.test.bitsila.com|ondc-connect-test.localzoho.com)$'))
+group by 1,2),
+main_table as (
+select t1.* , t2.review,
+	case
+		when row_number() over (partition by t1.bap_id,t1.network_transaction_id order by	t1.date) > 1 then 0
+		else 1
+	end as snp_key,
+	case
+		when row_number() over (partition by t1.bpp_id,t1.network_transaction_id order by	t1.date) > 1 then 0
+		else 1
+	end as lnp_key
+from table2 t2 left join table1 t1 on t1.bap_id = t2.bap_id and t1.network_transaction_id = t2.network_transaction_id)
+select
+	bap_id ,
+	bpp_id ,
+	"date" ,
+	s_category_id ,
+	pick_up_pincode ,
+	delivery_pincode ,
+	s_sync_response ,
+	on_search_received ,
+	on_search_error ,
+	review ,
+	sum(snp_key) as snp_key ,
+	sum(lnp_key) as lnp_key
+from
+	main_table
+group by bap_id ,
+	bpp_id ,
+	"date" ,
+	s_category_id ,
+	pick_up_pincode ,
+	delivery_pincode ,
+	s_sync_response ,
+	on_search_received ,
+	on_search_error ,
+	review
