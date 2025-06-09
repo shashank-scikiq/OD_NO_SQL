@@ -6,6 +6,7 @@ select
 	transaction_std_code,
 	"order_status" as "status",
 	"vehicle_category",
+	o_cancellation_code as cancellation_code ,
 	date(substring("o_created_date",1,10)) as "created_at",
 	case
 		when date(coalesce(substring("o_completed_at",1,10), substring("f_ride_ended_at",1,10))) is not null then 1 
@@ -22,8 +23,7 @@ select
 		else 0
 	end as "assigned_at",
 	case 
-		when row_number() over(partition by "network_order_id"
-		order by "o_created_date") > 1 then 0 else 1
+		when row_number() over(partition by "network_order_id" order by "o_created_date") > 1 then 0 else 1
 	end as "ride_count"
 from
 	"default".shared_ride_hailing_order
@@ -34,9 +34,13 @@ select
 	transaction_std_code,
 	vehicle_category,
 	created_at as "Date",
+	case
+		when cancellation_code is null then -1
+		else cast(cancellation_code as integer )
+	end cancellation_code,
 	sum(completed_at) as "completed",
 	sum(cancelled_at) as "cancelled",
 	sum(assigned_at) as "assigned",
 	sum(ride_count) as "confirmed"
 from base_table
-group by 1,2,3,4,5
+group by 1,2,3,4,5,6
